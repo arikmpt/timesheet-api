@@ -8,6 +8,9 @@
 		"prettier": "prettier . --write",
 		"prepare": "husky"
 	},
+	"prisma": {
+		"seed": "tsx prisma/seeders/index.ts"
+	},
 	"dependencies": {
 		"elysia": "latest",
 		"prisma": "^6.2.1"
