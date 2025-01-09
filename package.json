@@ -12,6 +12,7 @@
 		"seed": "tsx prisma/seeders/index.ts"
 	},
 	"dependencies": {
+		"@elysiajs/swagger": "^1.2.0",
 		"elysia": "latest",
 		"prisma": "^6.2.1"
 	},

@@ -1,5 +1,18 @@
 import { t } from 'elysia';
 
+export const rolesValidation = {
+	query: t.Object({
+		pageSize: t.Optional(t.String()),
+		lastId: t.Optional(t.String())
+	})
+};
+
+export const roleValidation = {
+	params: t.Object({
+		id: t.Number()
+	})
+};
+
 export const storeValidation = {
 	body: t.Object({
 		name: t.String({

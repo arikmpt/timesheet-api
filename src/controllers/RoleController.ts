@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { Context } from 'elysia/dist/context';
+import { Context } from 'elysia';
 
 const db = new PrismaClient();
 
@@ -70,7 +70,7 @@ export const get = async ({ query }: Context) => {
 
 export const store = async ({ set, body }: Context) => {
 	const request = body as Create;
-	set.status = 201;
+	set.status = 'Created';
 	return db.$transaction(async (tx) => {
 		const role = await tx.role.create({
 			data: {

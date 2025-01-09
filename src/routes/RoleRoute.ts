@@ -7,18 +7,23 @@ import {
 	destroy as destroyRoles
 } from '../controllers/RoleController';
 import {
+	rolesValidation,
+	roleValidation,
 	storeValidation as storeRoleValidation,
 	updateValidation as updateRoleValidation,
 	destroyValidation as destroyRoleValidation
 } from '../validators/RoleValidator';
 
-const app = new Elysia().group('/roles', (app) =>
-	app
-		.get('/', getRoles)
-		.get('/:id', findRole)
-		.post('/', storeRoles, storeRoleValidation)
-		.put('/', updateRoles, updateRoleValidation)
-		.delete('/', destroyRoles, destroyRoleValidation)
-);
+const app = new Elysia({
+	prefix: '/roles',
+	detail: {
+		tags: ['Role']
+	}
+})
+	.get('/', getRoles, rolesValidation)
+	.get('/:id', findRole, roleValidation)
+	.post('/', storeRoles, storeRoleValidation)
+	.put('/', updateRoles, updateRoleValidation)
+	.delete('/', destroyRoles, destroyRoleValidation);
 
 export default app;
