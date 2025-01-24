@@ -1,0 +1,40 @@
+{
+  "name": "timesheet-api",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch src/index.ts",
+    "pretty": "prettier --write \"**/*.{ts,js}\"",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@elysiajs/swagger": "^1.2.0",
+    "@prisma/client": "^6.2.1",
+    "elysia": "latest"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.18.0",
+    "@typescript-eslint/eslint-plugin": "^8.21.0",
+    "@typescript-eslint/parser": "^8.21.0",
+    "bun-types": "^1.2.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.3",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-sonarjs": "^3.0.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.2",
+    "prettier": "^3.4.2",
+    "prisma": "^6.2.1"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
+  },
+  "module": "src/index.js"
+}
