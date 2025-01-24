@@ -1,5 +1,6 @@
 import config from '@config';
 import swagger from '@elysiajs/swagger';
+import vendorRoutes from '@routes/vendor';
 import { Elysia } from 'elysia';
 
 export const app = new Elysia()
@@ -15,6 +16,7 @@ export const app = new Elysia()
     })
   )
   .get('/', () => 'Hello Elysia')
+  .use(vendorRoutes)
   .listen(config.app.port, () => {
     console.log(`Environment: ${config.app.env}`);
     console.log(`Bun (🍔) API Starter is running at ${config.app.host}:${config.app.port}`);

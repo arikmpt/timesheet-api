@@ -12,3 +12,12 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model Vendor {
+  id            Int         @id @default(autoincrement())
+  name          String      @db.VarChar(80) @unique
+  address       String      @db.Text()
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  @@map("vendors")
+}
