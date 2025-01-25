@@ -14,6 +14,10 @@ const prisma = new PrismaClient().$extends({
         const result = await query(args);
         return postprocessAfterFetch(result);
       },
+      findFirstOrThrow: async ({ args, query }) => {
+        const result = await query(args);
+        return postprocessAfterFetch(result);
+      },
       findMany: async ({ args, query }) => {
         const result = await query(args);
         return postprocessAfterFetch(result);
