@@ -14,12 +14,14 @@ datasource db {
 }
 
 model Vendor {
-  id            Int         @id @default(autoincrement())
-  name          String      @db.VarChar(80) @unique
-  address       String      @db.Text()
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+  id                Int         @id @default(autoincrement())
+  name              String      @db.VarChar(80) @unique
+  address           String      @db.Text()
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
   @@map("vendors")
+  employeeContracts EmployeeContract[]
+  users             VendorUser[]
 }
 
 model Role {
@@ -55,19 +57,21 @@ model RolePermission {
 }
 
 model User {
-  id            Int         @id @default(autoincrement())
-  email         String      @unique @db.VarChar(80)
-  password      String
-  isActive      Boolean     @default(true)  @map("is_active")
-  lastLogin     DateTime?   @map("last_login")
-  roleId        Int         @map("role_id")
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+  id                Int         @id @default(autoincrement())
+  email             String      @unique @db.VarChar(80)
+  password          String
+  isActive          Boolean     @default(true)  @map("is_active")
+  lastLogin         DateTime?   @map("last_login")
+  roleId            Int         @map("role_id")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
 
-  role          Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  profile       Profile?
-
+  role              Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  profile           Profile?
+  
   @@map("users")
+  employeeContracts EmployeeContract[]
+  vendors           VendorUser[]
 }
 
 model Profile {
@@ -85,4 +89,40 @@ model Profile {
 
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@map("profiles")
+}
+
+model Contract {
+  id                Int         @id @default(autoincrement())
+  code              String      @db.VarChar(25) @unique
+  startDate         DateTime    @map("start_date")
+  endDate           DateTime    @map("end_date")
+  hourlyRate        Float       @map("hourly_rate")
+  minHourPerWeek    Int         @map("min_hour_per_week")
+  maxHourPerWeek    Int         @map("max_hour_per_week")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  employeeContracts EmployeeContract[]
+
+  @@map("contracts")
+}
+
+model EmployeeContract {
+  employeeId      Int         @map("employee_id")
+  contractId      Int         @map("contract_id")
+  vendorId        Int         @map("vendor_id")
+  employee        User        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  contract        Contract    @relation(fields: [contractId], references: [id], onDelete: Cascade)        
+  vendor          Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@id([employeeId, contractId, vendorId])
+  @@map("employee_contracts") 
+}
+
+model VendorUser {
+  vendorId        Int         @map("vendor_id")
+  userId          Int         @map("user_id")
+  vendor          Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([userId, vendorId])
+  @@map("vendor_users")
 }

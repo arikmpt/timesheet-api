@@ -1,6 +1,7 @@
 import config from '@config';
 import swagger from '@elysiajs/swagger';
 import authRoutes from '@routes/auth';
+import contractRoutes from '@routes/contract';
 import roleRoutes from '@routes/role';
 import userRoutes from '@routes/user';
 import vendorRoutes from '@routes/vendor';
@@ -22,6 +23,7 @@ export const app = new Elysia()
   .use(userRoutes)
   .use(roleRoutes)
   .use(vendorRoutes)
+  .use(contractRoutes)
   .listen(config.app.port, () => {
     console.log(`Environment: ${config.app.env}`);
     console.log(`Bun (🍔) API Starter is running at ${config.app.host}:${config.app.port}`);
