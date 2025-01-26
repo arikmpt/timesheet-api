@@ -39,7 +39,8 @@ export default [
       'sonarjs/sonar-no-fallthrough': 'off',
       '@typescript-eslint/no-shadow': ['error'],
       '@typescript-eslint/ban-ts-comment': 'off',
-      'simple-import-sort/imports': 'warn'
+      'simple-import-sort/imports': 'warn',
+      'prettier/prettier': ['error', { endOfLine: 'auto' }]
     }
   }
 ];

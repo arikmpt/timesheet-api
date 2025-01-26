@@ -9,14 +9,21 @@
     "lint:fix": "eslint src --fix",
     "prepare": "husky"
   },
+  "prisma": {
+    "seed": "tsx prisma/seeders/index.ts"
+  },
   "dependencies": {
+    "@elysiajs/jwt": "^1.2.0",
     "@elysiajs/swagger": "^1.2.0",
     "@prisma/client": "^6.2.1",
+    "bcrypt": "^5.1.1",
     "elysia": "latest"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
+    "@types/bcrypt": "^5.0.2",
+    "@types/node": "^22.10.10",
     "@typescript-eslint/eslint-plugin": "^8.21.0",
     "@typescript-eslint/parser": "^8.21.0",
     "bun-types": "^1.2.0",
@@ -28,7 +35,10 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.4.2",
     "prettier": "^3.4.2",
-    "prisma": "^6.2.1"
+    "prisma": "^6.2.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
   },
   "lint-staged": {
     "*.{js,ts}": [

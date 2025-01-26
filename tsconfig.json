@@ -21,7 +21,8 @@
       "@config": ["./config"],
       "@routes/*" : ["./routes/*"],
       "@schemas/*": ["./schemas/*"],
-      "@services/*": ["./services/*"]
+      "@services/*": ["./services/*"],
+      "@plugins/*": ["./plugins/*"]
     }
   }
 }
