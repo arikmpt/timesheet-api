@@ -13,6 +13,6 @@ export default new Elysia({
 })
   .use(jwtPlugin)
   .use(verifyToken)
-  .get('/profile', ({ decryptId }) => service.profile(decryptId), profileResponseSchema)
-  .put('/profile', ({ body, decryptId }) => service.updateProfile(body, decryptId), updateProfileSchema)
-  .put('/change-password', ({ body, decryptId }) => service.changePassword(body, decryptId), changePasswordSchema);
+  .get('/profile', ({ userToken }) => service.profile(userToken?.id), profileResponseSchema)
+  .put('/profile', ({ body, userToken }) => service.updateProfile(body, userToken?.id), updateProfileSchema)
+  .put('/change-password', ({ body, userToken }) => service.changePassword(body, userToken?.id), changePasswordSchema);

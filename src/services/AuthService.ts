@@ -18,7 +18,21 @@ export default class AuthService {
       where: {
         email: payload.email
       },
-      select: { id: true, password: true }
+      include: {
+        role: {
+          include: {
+            permissions: {
+              include: {
+                permission: {
+                  select: {
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     });
     if (!findUser) {
       throw new Error('Invalid Credentials');
@@ -26,7 +40,9 @@ export default class AuthService {
 
     if (await bcrypt.compare(payload.password, findUser.password)) {
       const token = await jwt.sign({
-        id: findUser.id
+        id: findUser.id,
+        role: findUser.role.name.toLocaleLowerCase(),
+        permissions: JSON.stringify(findUser.role.permissions)
       });
       return {
         token

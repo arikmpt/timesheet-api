@@ -1,3 +1,4 @@
+import { jwtPlugin, verifyToken } from '@plugins/security';
 import { destroySchema, findOneSchema, indexSchema, storeSchema, updateSchema } from '@schemas/role';
 import Service from '@services/RoleService';
 import { Elysia } from 'elysia';
@@ -8,9 +9,13 @@ export default new Elysia({
     tags: ['Role']
   }
 })
-  .decorate('service', new Service())
-  .get('/', ({ service, query }) => service.getAllRoles(query), indexSchema)
-  .get('/:id', ({ service, params: { id } }) => service.findRole(id), findOneSchema)
-  .post('/', ({ service, body }) => service.storeRole(body), storeSchema)
-  .put('/', ({ service, body }) => service.updateRole(body), updateSchema)
-  .delete('/:id', ({ service, params: { id } }) => service.destroyRole(id), destroySchema);
+  .use(jwtPlugin)
+  .use(verifyToken)
+  .derive(({ userToken }) => ({
+    service: new Service(userToken)
+  }))
+  .get('/', ({ query, service }) => service.getAllRoles(query), indexSchema)
+  .get('/:id', ({ params: { id }, service }) => service.findRole(id), findOneSchema)
+  .post('/', ({ body, service }) => service.storeRole(body), storeSchema)
+  .put('/', ({ body, service }) => service.updateRole(body), updateSchema)
+  .delete('/:id', ({ params: { id }, service }) => service.destroyRole(id), destroySchema);
