@@ -1,8 +1,7 @@
-import security from '@plugins/security';
+import { jwtPlugin } from '@plugins/security';
 import { loginSchema } from '@schemas/auth';
 import Service from '@services/AuthService';
 import { Elysia } from 'elysia';
-const service = new Service();
 
 export default new Elysia({
   prefix: '/auth',
@@ -10,5 +9,6 @@ export default new Elysia({
     tags: ['Auth']
   }
 })
-  .use(security)
-  .post('/login', ({ jwt, body }) => service.login(body, jwt), loginSchema);
+  .use(jwtPlugin)
+  .decorate('service', new Service())
+  .post('/login', ({ jwt, body, service }) => service.login(body, jwt), loginSchema);

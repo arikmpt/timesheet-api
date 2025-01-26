@@ -65,9 +65,9 @@ model User {
   updatedAt     DateTime    @updatedAt @map("updated_at")
 
   role          Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  profile       Profile?
 
   @@map("users")
-  profile Profile?
 }
 
 model Profile {
