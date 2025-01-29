@@ -7,17 +7,29 @@ const EMPLOYEE_ROLE = 'employee';
 
 const roles = [ADMIN_ROLE, HRD_ROLE, VENDOR_ROLE, EMPLOYEE_ROLE];
 
-const ROLE_PERMISSIONS = ['create_role', 'read_role', 'update_role', 'destroy_role'];
+const ROLE_PERMISSIONS = ['create_role', 'read_role', 'update_role', 'destroy_role', 'index_role'];
 
-const USER_PERMISSIONS = ['create_user', 'read_user', 'update_user', 'destroy_user'];
+const USER_PERMISSIONS = ['create_user', 'read_user', 'update_user', 'destroy_user', 'index_user'];
 
-const CONTRACT_PERMISSIONS = ['create_contract', 'read_contract', 'update_contract', 'destroy_contract'];
+const CONTRACT_PERMISSIONS = [
+  'create_contract',
+  'read_contract',
+  'update_contract',
+  'destroy_contract',
+  'index_contract'
+];
 
-const VENDOR_PERMISSIONS = ['create_vendor', 'read_vendor', 'update_vendor', 'destroy_vendor'];
+const VENDOR_PERMISSIONS = ['create_vendor', 'read_vendor', 'update_vendor', 'destroy_vendor', 'index_vendor'];
 
-const INVOICE_PERMISSIONS = ['create_invoice', 'read_invoice', 'update_invoice', 'destroy_invoice'];
+const INVOICE_PERMISSIONS = ['create_invoice', 'read_invoice', 'update_invoice', 'destroy_invoice', 'index_invoice'];
 
-const TIMESHEET_PERMISSIONS = ['create_timesheet', 'read_timesheet', 'update_timesheet', 'destroy_timesheet'];
+const TIMESHEET_PERMISSIONS = [
+  'create_timesheet',
+  'read_timesheet',
+  'update_timesheet',
+  'destroy_timesheet',
+  'index_timesheet'
+];
 
 const ADMIN_PERMISSIONS = [
   ...ROLE_PERMISSIONS,
@@ -36,9 +48,15 @@ const HR_PERMISSIONS = [
   'notes_timesheet'
 ];
 
-const EMPLOYEE_PERMISSIONS = [...TIMESHEET_PERMISSIONS];
+const EMPLOYEE_PERMISSIONS = [...TIMESHEET_PERMISSIONS, 'read_contract', 'read_contract'];
 
-const VENDOR_ROLE_PERMISSIONS = ['read_timesheet', 'status_timesheet', 'notes_timesheet', 'read_invoice'];
+const VENDOR_ROLE_PERMISSIONS = [
+  'read_timesheet',
+  'status_timesheet',
+  'notes_timesheet',
+  'read_invoice',
+  'index_contract'
+];
 
 const permissions = [...ADMIN_PERMISSIONS, ...HR_PERMISSIONS, ...EMPLOYEE_PERMISSIONS, ...VENDOR_ROLE_PERMISSIONS];
 

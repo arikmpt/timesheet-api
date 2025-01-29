@@ -23,7 +23,8 @@
       "@schemas/*": ["./schemas/*"],
       "@services/*": ["./services/*"],
       "@plugins/*": ["./plugins/*"],
-      "@contanst": ["./constants"]
+      "@contanst": ["./constants"],
+      "@exceptions/*": ["./exceptions/*"]
     }
   }
 }

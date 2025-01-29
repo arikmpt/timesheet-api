@@ -1,5 +1,7 @@
 import config from '@config';
 import swagger from '@elysiajs/swagger';
+import { errorHandling } from '@exceptions/handling';
+import errorPlugin from '@plugins/error';
 import authRoutes from '@routes/auth';
 import contractRoutes from '@routes/contract';
 import roleRoutes from '@routes/role';
@@ -19,6 +21,15 @@ export const app = new Elysia()
       }
     })
   )
+  .onError(({ set, error }) => {
+    const errorHandlingResponse = errorHandling(error);
+
+    set.status = errorHandlingResponse.code;
+    return {
+      message: errorHandlingResponse.message
+    };
+  })
+  .use(errorPlugin)
   .use(authRoutes)
   .use(userRoutes)
   .use(roleRoutes)

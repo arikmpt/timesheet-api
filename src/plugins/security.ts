@@ -1,5 +1,6 @@
 import config from '@config';
 import { jwt as jwtLibrary } from '@elysiajs/jwt';
+import UnauthorizedError from '@exceptions/UnauthorizedError';
 import { Elysia } from 'elysia';
 
 export interface TokenData {
@@ -35,7 +36,11 @@ export const verifyToken = new Elysia({ name: 'userToken' })
 
     const userToken = await jwt.verify(headers.authorization);
     if (!userToken) {
-      throw new Error('Invalid token!');
+      throw new UnauthorizedError('Invalid token!');
+    }
+
+    if (!userToken.permissions) {
+      throw new UnauthorizedError('Invalid token!');
     }
     const userPermissions = JSON.parse(userToken.permissions as string) as RawPermission[];
 

@@ -1,3 +1,4 @@
+import UnauthorizedError from '@exceptions/UnauthorizedError';
 import bcrypt from 'bcrypt';
 
 import prisma from './prisma';
@@ -35,7 +36,7 @@ export default class AuthService {
       }
     });
     if (!findUser) {
-      throw new Error('Invalid Credentials');
+      throw new UnauthorizedError('Invalid Credentials');
     }
 
     if (await bcrypt.compare(payload.password, findUser.password)) {
@@ -49,6 +50,6 @@ export default class AuthService {
       };
     }
 
-    throw new Error('Invalid Credentials');
+    throw new UnauthorizedError('Invalid Credentials');
   }
 }

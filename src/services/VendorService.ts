@@ -1,3 +1,7 @@
+import UniqueError from '@exceptions/UniqueError';
+import { CREATE_VENDOR, DESTROY_VENDOR, INDEX_VENDOR, READ_VENDOR, UPDATE_VENDOR } from 'contants';
+
+import AuthorizationService from './AuthorizationService';
 import prisma from './prisma';
 
 interface Create {
@@ -15,8 +19,10 @@ interface Query {
   keyword?: string;
 }
 
-export default class VendorService {
+export default class VendorService extends AuthorizationService {
   async getAllVendors(query: Query) {
+    this.checkPermission(INDEX_VENDOR);
+
     const lastId = query.lastId ? parseInt(query.lastId as string) : null;
     const pageSize = parseInt(query.pageSize as string) || 10;
     const take = pageSize > 0 ? pageSize + 1 : 10;
@@ -44,6 +50,18 @@ export default class VendorService {
   }
 
   async createVendor(payload: Create) {
+    this.checkPermission(CREATE_VENDOR);
+
+    const findExist = await prisma.vendor.findFirst({
+      where: {
+        name: payload.name
+      }
+    });
+
+    if (findExist) {
+      throw new UniqueError(`Vendor name already exists`);
+    }
+
     const store = await prisma.vendor.create({
       data: payload
     });
@@ -54,6 +72,8 @@ export default class VendorService {
   }
 
   async getVendor(id: number) {
+    this.checkPermission(READ_VENDOR);
+
     return {
       vendor: await prisma.vendor.findFirstOrThrow({
         where: {
@@ -64,6 +84,25 @@ export default class VendorService {
   }
 
   async updateVendor(payload: Update) {
+    this.checkPermission(UPDATE_VENDOR);
+
+    const findExist = await prisma.vendor.findFirst({
+      where: {
+        name: payload.name,
+        AND: [
+          {
+            NOT: {
+              id: payload.id
+            }
+          }
+        ]
+      }
+    });
+
+    if (findExist) {
+      throw new UniqueError(`Vendor name already exists`);
+    }
+
     const store = await prisma.vendor.update({
       where: {
         id: payload.id
@@ -80,6 +119,8 @@ export default class VendorService {
   }
 
   async destroyVendor(id: number) {
+    this.checkPermission(DESTROY_VENDOR);
+
     await prisma.vendor.delete({
       where: {
         id

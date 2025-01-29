@@ -1,5 +1,6 @@
+import UniqueError from '@exceptions/UniqueError';
 import { TokenData } from '@plugins/security';
-import { CREATE_ROLE, DESTROY_ROLE, READ_ROLE, UPDATE_ROLE } from 'contants';
+import { CREATE_ROLE, DESTROY_ROLE, INDEX_ROLE, READ_ROLE, UPDATE_ROLE } from 'contants';
 
 import AuthorizationService from './AuthorizationService';
 import prisma from './prisma';
@@ -25,9 +26,8 @@ export default class RoleService extends AuthorizationService {
   }
 
   async getAllRoles(query: Query) {
-    if (!this.permissions.includes(READ_ROLE)) {
-      throw new Error(`Your don't have permission to see this page`);
-    }
+    this.checkPermission(INDEX_ROLE);
+
     const lastId = query.lastId ? parseInt(query.lastId as string) : null;
     const pageSize = parseInt(query.pageSize as string) || 10;
     const take = pageSize > 0 ? pageSize + 1 : 10;
@@ -55,9 +55,8 @@ export default class RoleService extends AuthorizationService {
   }
 
   async findRole(id: number) {
-    if (!this.permissions.includes(READ_ROLE)) {
-      throw new Error(`Your don't have permission to see this page`);
-    }
+    this.checkPermission(READ_ROLE);
+
     const role = await prisma.role.findFirstOrThrow({
       where: {
         id
@@ -82,9 +81,18 @@ export default class RoleService extends AuthorizationService {
   }
 
   async storeRole(payload: Create) {
-    if (!this.permissions.includes(CREATE_ROLE)) {
-      throw new Error(`Your don't have permission to see this page`);
+    this.checkPermission(CREATE_ROLE);
+
+    const findExist = await prisma.role.findFirst({
+      where: {
+        name: payload.name
+      }
+    });
+
+    if (findExist) {
+      throw new UniqueError(`Role name already exists`);
     }
+
     return prisma.$transaction(async (tx) => {
       const role = await tx.role.create({
         data: {
@@ -107,9 +115,25 @@ export default class RoleService extends AuthorizationService {
   }
 
   async updateRole(payload: Update) {
-    if (!this.permissions.includes(UPDATE_ROLE)) {
-      throw new Error(`Your don't have permission to see this page`);
+    this.checkPermission(UPDATE_ROLE);
+
+    const findExist = await prisma.role.findFirst({
+      where: {
+        name: payload.name,
+        AND: [
+          {
+            NOT: {
+              id: payload.id
+            }
+          }
+        ]
+      }
+    });
+
+    if (findExist) {
+      throw new UniqueError(`Role name already exists`);
     }
+
     return prisma.$transaction(async (tx) => {
       const role = await tx.role.update({
         where: {
@@ -141,9 +165,8 @@ export default class RoleService extends AuthorizationService {
   }
 
   async destroyRole(id: number) {
-    if (!this.permissions.includes(DESTROY_ROLE)) {
-      throw new Error(`Your don't have permission to see this page`);
-    }
+    this.checkPermission(DESTROY_ROLE);
+
     return prisma.$transaction(async (tx) => {
       const role = await tx.role.findFirstOrThrow({
         where: {
