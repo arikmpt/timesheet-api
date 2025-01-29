@@ -3,8 +3,6 @@ import { assignToVendorSchema, changePasswordSchema, profileResponseSchema, upda
 import Service from '@services/UserService';
 import { Elysia } from 'elysia';
 
-const service = new Service();
-
 export default new Elysia({
   prefix: '/user',
   detail: {
@@ -16,8 +14,12 @@ export default new Elysia({
   .derive(({ userToken }) => ({
     service: new Service(userToken)
   }))
-  .get('/profile', ({ userToken }) => service.profile(userToken?.id), profileResponseSchema)
-  .put('/profile', ({ body, userToken }) => service.updateProfile(body, userToken?.id), updateProfileSchema)
-  .put('/change-password', ({ body, userToken }) => service.changePassword(body, userToken?.id), changePasswordSchema)
-  .put('/assign-to-vendor', ({ body }) => service.assignUserToVendor(body), assignToVendorSchema)
-  .put('/unassign-from-vendor', ({ body }) => service.unassignUserFromVendor(body), assignToVendorSchema);
+  .get('/profile', ({ userToken, service }) => service.profile(userToken?.id), profileResponseSchema)
+  .put('/profile', ({ body, userToken, service }) => service.updateProfile(body, userToken?.id), updateProfileSchema)
+  .put(
+    '/change-password',
+    ({ body, userToken, service }) => service.changePassword(body, userToken?.id),
+    changePasswordSchema
+  )
+  .put('/assign-to-vendor', ({ body, service }) => service.assignUserToVendor(body), assignToVendorSchema)
+  .put('/unassign-from-vendor', ({ body, service }) => service.unassignUserFromVendor(body), assignToVendorSchema);
