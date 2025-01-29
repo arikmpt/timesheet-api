@@ -15,11 +15,12 @@ datasource db {
 
 model Vendor {
   id                Int         @id @default(autoincrement())
-  name              String      @db.VarChar(80) @unique
+  name              String      @db.VarChar(80)
   address           String      @db.Text()
   createdAt         DateTime    @default(now()) @map("created_at")
   updatedAt         DateTime    @updatedAt @map("updated_at")
   @@map("vendors")
+  @@index([name])
   employeeContracts EmployeeContract[]
   users             VendorUser[]
 }
@@ -71,7 +72,7 @@ model User {
   
   @@map("users")
   employeeContracts EmployeeContract[]
-  vendors           VendorUser[]
+  vendor           VendorUser?
 }
 
 model Profile {
@@ -93,7 +94,7 @@ model Profile {
 
 model Contract {
   id                Int         @id @default(autoincrement())
-  code              String      @db.VarChar(25) @unique
+  code              String      @db.VarChar(25)
   startDate         DateTime    @map("start_date")
   endDate           DateTime    @map("end_date")
   hourlyRate        Float       @map("hourly_rate")
@@ -102,7 +103,7 @@ model Contract {
   createdAt         DateTime    @default(now()) @map("created_at")
   updatedAt         DateTime    @updatedAt @map("updated_at")
   employeeContracts EmployeeContract[]
-
+  @@index([code, startDate, endDate, hourlyRate, minHourPerWeek, maxHourPerWeek])
   @@map("contracts")
 }
 
@@ -120,7 +121,7 @@ model EmployeeContract {
 
 model VendorUser {
   vendorId        Int         @map("vendor_id")
-  userId          Int         @map("user_id")
+  userId          Int         @map("user_id") @unique
   vendor          Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@id([userId, vendorId])

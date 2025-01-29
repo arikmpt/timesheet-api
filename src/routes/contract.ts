@@ -1,9 +1,14 @@
 import { jwtPlugin, verifyToken } from '@plugins/security';
-import { createContract } from '@schemas/contract';
+import {
+  assignContract,
+  createContract,
+  destroyContract,
+  findOneContract,
+  indexSchema,
+  updateContract
+} from '@schemas/contract';
 import Service from '@services/ContractService';
 import { Elysia } from 'elysia';
-
-const service = new Service();
 
 export default new Elysia({
   prefix: '/contracts',
@@ -13,4 +18,13 @@ export default new Elysia({
 })
   .use(jwtPlugin)
   .use(verifyToken)
-  .post('/', ({ body }) => service.createContract(body), createContract);
+  .derive(({ userToken }) => ({
+    service: new Service(userToken)
+  }))
+  .get('/', ({ query, service }) => service.getContracts(query), indexSchema)
+  .get('/:id', ({ params: { id }, service }) => service.findContract(id), findOneContract)
+  .post('/', ({ body, service }) => service.createContract(body), createContract)
+  .put('/', ({ body, service }) => service.updateContract(body), updateContract)
+  .delete('/', ({ params: { id }, service }) => service.destroyContract(id), destroyContract)
+  .put('/assign-contract', ({ body, service }) => service.assignContract(body), assignContract)
+  .put('/unassign-contract', ({ body, service }) => service.unassignContract(body), assignContract);

@@ -1,3 +1,8 @@
+import UniqueError from '@exceptions/UniqueError';
+import { TokenData } from '@plugins/security';
+import { CREATE_ROLE, DESTROY_ROLE, INDEX_ROLE, READ_ROLE, UPDATE_ROLE } from 'contants';
+
+import AuthorizationService from './AuthorizationService';
 import prisma from './prisma';
 
 interface Create {
@@ -15,8 +20,14 @@ interface Query {
   keyword?: string;
 }
 
-export default class RoleService {
+export default class RoleService extends AuthorizationService {
+  constructor(auth?: TokenData) {
+    super(auth);
+  }
+
   async getAllRoles(query: Query) {
+    this.checkPermission(INDEX_ROLE);
+
     const lastId = query.lastId ? parseInt(query.lastId as string) : null;
     const pageSize = parseInt(query.pageSize as string) || 10;
     const take = pageSize > 0 ? pageSize + 1 : 10;
@@ -44,6 +55,8 @@ export default class RoleService {
   }
 
   async findRole(id: number) {
+    this.checkPermission(READ_ROLE);
+
     const role = await prisma.role.findFirstOrThrow({
       where: {
         id
@@ -68,6 +81,18 @@ export default class RoleService {
   }
 
   async storeRole(payload: Create) {
+    this.checkPermission(CREATE_ROLE);
+
+    const findExist = await prisma.role.findFirst({
+      where: {
+        name: payload.name
+      }
+    });
+
+    if (findExist) {
+      throw new UniqueError(`Role name already exists`);
+    }
+
     return prisma.$transaction(async (tx) => {
       const role = await tx.role.create({
         data: {
@@ -90,6 +115,25 @@ export default class RoleService {
   }
 
   async updateRole(payload: Update) {
+    this.checkPermission(UPDATE_ROLE);
+
+    const findExist = await prisma.role.findFirst({
+      where: {
+        name: payload.name,
+        AND: [
+          {
+            NOT: {
+              id: payload.id
+            }
+          }
+        ]
+      }
+    });
+
+    if (findExist) {
+      throw new UniqueError(`Role name already exists`);
+    }
+
     return prisma.$transaction(async (tx) => {
       const role = await tx.role.update({
         where: {
@@ -121,6 +165,8 @@ export default class RoleService {
   }
 
   async destroyRole(id: number) {
+    this.checkPermission(DESTROY_ROLE);
+
     return prisma.$transaction(async (tx) => {
       const role = await tx.role.findFirstOrThrow({
         where: {

@@ -22,7 +22,9 @@
       "@routes/*" : ["./routes/*"],
       "@schemas/*": ["./schemas/*"],
       "@services/*": ["./services/*"],
-      "@plugins/*": ["./plugins/*"]
+      "@plugins/*": ["./plugins/*"],
+      "@contanst": ["./constants"],
+      "@exceptions/*": ["./exceptions/*"]
     }
   }
 }
