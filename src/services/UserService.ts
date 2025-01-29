@@ -1,5 +1,7 @@
 import bcrypt from 'bcrypt';
+import { UPDATE_USER } from 'contants';
 
+import AuthorizationService from './AuthorizationService';
 import prisma from './prisma';
 
 interface UpdateProfile {
@@ -17,7 +19,12 @@ interface ChangePassword {
   newPassword: string;
 }
 
-export default class UserService {
+interface InviteVendorUser {
+  userId: number;
+  vendorId: number;
+}
+
+export default class UserService extends AuthorizationService {
   async profile(id?: number) {
     const profile = await prisma.profile.findFirstOrThrow({
       where: {
@@ -75,5 +82,46 @@ export default class UserService {
     }
 
     throw new Error('Wrong old password');
+  }
+
+  async assignUserToVendor(payload: InviteVendorUser) {
+    this.checkPermission(UPDATE_USER);
+    const findExist = await prisma.vendorUser.findFirst({
+      where: {
+        vendorId: payload.vendorId,
+        userId: payload.userId
+      }
+    });
+
+    if (findExist) {
+      throw new Error('User already assign to vendor');
+    }
+
+    await prisma.vendorUser.create({
+      data: {
+        vendorId: payload.vendorId,
+        userId: payload.userId
+      }
+    });
+
+    return {
+      message: 'User assign to vendor successfully'
+    };
+  }
+
+  async unassignUserFromVendor(payload: InviteVendorUser) {
+    this.checkPermission(UPDATE_USER);
+    await prisma.vendorUser.delete({
+      where: {
+        userId_vendorId: {
+          vendorId: payload.vendorId,
+          userId: payload.userId
+        }
+      }
+    });
+
+    return {
+      message: 'User unassign successfully from vendor'
+    };
   }
 }

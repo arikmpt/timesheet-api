@@ -36,3 +36,13 @@ export const changePasswordSchema = {
     message: t.String()
   })
 };
+
+export const assignToVendorSchema = {
+  body: t.Object({
+    vendorId: t.Number(),
+    userId: t.Number()
+  }),
+  response: t.Object({
+    message: t.String()
+  })
+};
