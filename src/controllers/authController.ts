@@ -36,11 +36,17 @@ const authController = new Elysia()
     }
   )
   .get('/profile', ({ authorizationContext }) => AuthService.profile(authorizationContext?.id), {
-    response: responseProfile
+    response: responseProfile,
+    detail: {
+      security: [{ bearerAuth: [] }]
+    }
   })
   .put('/profile', async ({ body }) => await AuthService.updateProfile(body), {
     body: requestProfile,
-    response: responseProfile
+    response: responseProfile,
+    detail: {
+      security: [{ bearerAuth: [] }]
+    }
   })
   .put(
     '/change-password',
@@ -54,7 +60,10 @@ const authController = new Elysia()
     },
     {
       body: requestChangePassword,
-      response: responseChangePassword
+      response: responseChangePassword,
+      detail: {
+        security: [{ bearerAuth: [] }]
+      }
     }
   )
   .post('/reset-password', async ({ body }) => await AuthService.resetPassword(body.email), {

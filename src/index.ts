@@ -23,8 +23,7 @@ const app = new Elysia()
               bearerFormat: 'JWT'
             }
           }
-        },
-        security: [{ bearerAuth: [] }]
+        }
       }
     })
   )
