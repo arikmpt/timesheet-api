@@ -5,6 +5,7 @@ import { ValidationError } from 'elysia';
 
 import { AuthorizationError } from './exceptions/AuthorizationError';
 import authRoute from './routes/authRoute';
+import roleRoute from './routes/roleRoute';
 
 const app = new Elysia()
   .use(
@@ -13,7 +14,17 @@ const app = new Elysia()
         info: {
           title: 'Timesheet API Documentation',
           version: '1.0.0'
-        }
+        },
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: 'http',
+              scheme: 'bearer',
+              bearerFormat: 'JWT'
+            }
+          }
+        },
+        security: [{ bearerAuth: [] }]
       }
     })
   )
@@ -87,6 +98,7 @@ const app = new Elysia()
     };
   })
   .use(authRoute)
+  .use(roleRoute)
   .listen(3000);
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);

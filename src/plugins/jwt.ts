@@ -6,7 +6,7 @@ import config from '@/config';
 const jwtPlugin = new Elysia().use(
   jwt({
     name: 'jwt',
-    secret: config.jwtSecret,
+    secret: config.jwtSecret as string,
     exp: '24h'
   })
 );

@@ -15,7 +15,15 @@ const authorizationPlugin = new Elysia({ name: 'authorizationContext' })
       return;
     }
 
-    const verifyToken = await jwt.verify(headers.authorization);
+    const authHeader = headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new AuthorizationError('Missing or invalid Authorization header');
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+
+    const verifyToken = await jwt.verify(token);
     if (!verifyToken) {
       throw new AuthorizationError('Unauthenticated');
     }
