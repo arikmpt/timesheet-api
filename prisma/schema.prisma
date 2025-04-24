@@ -50,6 +50,10 @@ model User {
 	password		String		
 	isActive		Boolean		@map("is_active")	@default(true)
 	lastLogin		DateTime?	@db.Timestamptz() 	@map("last_login")
+	invitationToken String? @map("invitation_token")
+	invitationExpiredAt DateTime? @db.Timestamp() @map("invitation_expired_at")
+	resetToken String? @map("reset_token")
+	resetExpiredAt DateTime? @db.Timestamp() @map("reset_expired_at")
 	roleId			Int?		@map("role_id")
 	role			Role?		@relation(fields: [roleId], references: [id], onDelete: SetNull)
 	profile			Profile?
