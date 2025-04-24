@@ -1,0 +1,184 @@
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
+
+import config from '@/config';
+import { Nullable } from '@/types';
+
+interface GetProfileRequest {
+  id: number;
+  firstName: string;
+  lastName: string;
+  countryCode: Nullable<string>;
+  contactNumber: Nullable<string>;
+  birthOfDate: Nullable<Date>;
+  placeOfBirth: Nullable<string>;
+  address: Nullable<string>;
+}
+
+interface GetChangePasswordRequest {
+  id?: number;
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+abstract class AuthService {
+  private static prisma = new PrismaClient();
+
+  static async login(email: string, password: string) {
+    const user = await this.prisma.user.findFirstOrThrow({
+      where: {
+        email
+      },
+      include: {
+        role: {
+          include: {
+            permissions: {
+              include: {
+                permission: {
+                  select: {
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (await bcrypt.compare(password, user.password)) {
+      const permissions: string[] = user.role?.permissions.map((data) => data.permission.name) || [];
+
+      await this.prisma.user.update({
+        where: {
+          id: user.id
+        },
+        data: {
+          lastLogin: new Date()
+        }
+      });
+
+      return {
+        email: user.email,
+        id: user.id,
+        permissions
+      };
+    }
+
+    throw new Error(`Credential is not match`);
+  }
+
+  static async profile(userId?: number) {
+    const profile = await this.prisma.profile.findUniqueOrThrow({
+      omit: {
+        userId: true
+      },
+      where: {
+        userId
+      },
+      include: {
+        user: {
+          select: {
+            email: true
+          }
+        }
+      }
+    });
+
+    return {
+      profile
+    };
+  }
+
+  static async updateProfile(body: GetProfileRequest) {
+    const profile = await this.prisma.profile.update({
+      where: {
+        id: body.id
+      },
+      data: {
+        ...body
+      },
+      include: {
+        user: {
+          select: {
+            email: true
+          }
+        }
+      }
+    });
+
+    return {
+      profile
+    };
+  }
+
+  static async changePassword(body: GetChangePasswordRequest) {
+    if (body.newPassword !== body.confirmPassword) {
+      throw new Error('New password and confirm password must be match');
+    }
+
+    const user = await this.prisma.user.findFirstOrThrow({
+      where: {
+        id: body.id
+      }
+    });
+
+    if (await bcrypt.compare(body.oldPassword, user.password)) {
+      const cryptedPassword = await bcrypt.hash(body.confirmPassword, config.saltRound);
+
+      const update = await this.prisma.user.update({
+        where: {
+          id: body.id
+        },
+        data: {
+          password: cryptedPassword
+        }
+      });
+
+      if (!update) {
+        throw new Error(`Failed to process your request`);
+      }
+
+      return {
+        message: 'Successfully to change your password'
+      };
+    }
+
+    throw new Error(`Wrong old password`);
+  }
+
+  static async resetPassword(email: string) {
+    const defaultPassword = process.env.DEFAULT_PASSWORD;
+
+    if (!defaultPassword) {
+      throw new Error('No Default Password');
+    }
+
+    const user = await this.prisma.user.findFirstOrThrow({
+      where: {
+        email
+      }
+    });
+
+    const cryptedPassword = await bcrypt.hash(defaultPassword, config.saltRound);
+
+    const update = await this.prisma.user.update({
+      where: {
+        id: user.id
+      },
+      data: {
+        password: cryptedPassword
+      }
+    });
+
+    if (!update) {
+      throw new Error(`Failed to process your request`);
+    }
+
+    return {
+      message: 'Successfully to reset your password'
+    };
+  }
+}
+
+export default AuthService;
