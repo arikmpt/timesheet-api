@@ -5,3 +5,5 @@ export type DateMonthFormat = `${number}${number}` | `${number}`;
 export type DateYearFormat = `${number}${number}${number}${number}`;
 
 export type DateISOFormat = `${DateYearFormat}-${DateMonthFormat}-${DateDayFormat}`;
+
+export type HasPermission = (name: string) => boolean;
