@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import crypto from 'crypto';
 import { HasPermission } from "@/types";
 import { AuthorizationError } from "@/exceptions/AuthorizationError";
-import { CREATE_USER } from "@/constant";
+import { CREATE_USER, FIND_USER } from "@/constant";
 import bcrypt from 'bcrypt';
 import config from "@/config";
 import { PrismaClient } from "@prisma/client";
@@ -89,6 +89,60 @@ abstract class UserService {
         ...result,
         profile: result.profile
       }
+    }
+  }
+
+  static async resendActivationLink(id: number, hasPermission?: HasPermission) {
+    if (!hasPermission?.(FIND_USER)) {
+      throw new AuthorizationError(`You don't have permission to this resource`);
+    }
+
+    const find = await this.prisma.user.findFirstOrThrow({
+      where: {
+        id
+      },
+    });
+
+    if(find.isActive) {
+      throw new Error(`This user already active, you can't resend the activation link`);
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiredAt = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+    const password = generateRandomPassword(8);
+    const cryptedPassword = await bcrypt.hash(password, config.saltRound);
+
+    const user = await this.prisma.user.update({
+      where: {
+        id
+      },
+      data: {
+        invitationToken: token,
+        invitationExpiredAt: expiredAt,
+        password: cryptedPassword
+      },
+      include: {
+        profile: true
+      }
+    })
+
+    const html = renderToStaticMarkup(
+      <InviteUser 
+        invitationLink={`${config.appUrl}users/accept-invitation?token=${token}`} 
+        firstName={user.profile?.firstName ?? ''} 
+        lastName={user.profile?.lastName ?? ''} 
+        password={password}
+      />
+    );
+
+    await sendEmail({ 
+      to: user.email, 
+      subject: 'Accept Invitation', 
+      html, 
+    })
+
+    return {
+      message: 'Successfully resend the activation link'
     }
   }
 }

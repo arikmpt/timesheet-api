@@ -31,4 +31,12 @@ const responseCreateUser = t.Object({
   })
 });
 
-export { requestCreateUser, responseCreateUser };
+const requestFindUser = t.Object({
+  id: t.Number()
+});
+
+const responseResendActivationLinkUser = t.Object({
+  message: t.String()
+});
+
+export { requestCreateUser, responseCreateUser, requestFindUser, responseResendActivationLinkUser };
