@@ -145,6 +145,31 @@ abstract class UserService {
       message: 'Successfully resend the activation link'
     }
   }
+
+  static async find(id: number, hasPermission?: HasPermission) {
+    if (!hasPermission?.(FIND_USER)) {
+      throw new AuthorizationError(`You don't have permission to this resource`);
+    }
+
+    const user = await this.prisma.user.findFirstOrThrow({
+      where: {
+        id
+      },
+      include: {
+        profile: true
+      },
+      omit: {
+        password: true
+      }
+    });
+
+    return {
+      user: {
+        ...user,
+        profile: user.profile
+      }
+    }
+  }
 }
 
 export default UserService

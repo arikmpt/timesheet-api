@@ -39,4 +39,6 @@ const responseResendActivationLinkUser = t.Object({
   message: t.String()
 });
 
-export { requestCreateUser, responseCreateUser, requestFindUser, responseResendActivationLinkUser };
+const responseFindUser = responseCreateUser;
+
+export { requestCreateUser, responseCreateUser, requestFindUser, responseResendActivationLinkUser, responseFindUser };
