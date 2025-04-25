@@ -41,4 +41,41 @@ const responseResendActivationLinkUser = t.Object({
 
 const responseFindUser = responseCreateUser;
 
-export { requestCreateUser, responseCreateUser, requestFindUser, responseResendActivationLinkUser, responseFindUser };
+const meta = t.Object({
+  totalData: t.Number(),
+  currentPage: t.Number(),
+  hasNextPage: t.Boolean(),
+  totalPage: t.Number()
+});
+
+const requestUsers = t.Object({
+  page: t.Optional(t.Number()),
+  limit: t.Optional(t.Number()),
+  search: t.Optional(t.String())
+});
+
+const responseUsers = t.Object({
+  users: t.Array(
+    t.Object({
+      id: t.Number(),
+      email: t.String(),
+      isActive: t.Boolean(),
+      lastLogin: t.Nullable(t.Date()),
+      roleId: t.Nullable(t.Number()),
+      createdAt: t.Date(),
+      updatedAt: t.Date(),
+      profile: t.Nullable(profile)
+    })
+  ),
+  meta
+});
+
+export {
+  requestCreateUser,
+  responseCreateUser,
+  requestFindUser,
+  responseResendActivationLinkUser,
+  responseFindUser,
+  requestUsers,
+  responseUsers
+};

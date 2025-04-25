@@ -1,9 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 
 import config from '@/config';
-import { CREATE_USER, FIND_USER } from '@/constant';
+import { CREATE_USER, FIND_USER, INDEX_USER } from '@/constant';
 import { AuthorizationError } from '@/exceptions/AuthorizationError';
 import { HasPermission } from '@/types';
 
@@ -17,8 +17,78 @@ interface CreateUser {
   roleId: number;
 }
 
+interface UserListQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
 abstract class UserService {
   private static prisma = new PrismaClient();
+
+  static async list(query: UserListQueryParams, hasPermission?: HasPermission) {
+    if (!hasPermission?.(INDEX_USER)) {
+      throw new AuthorizationError(`You don't have permission to this resource`);
+    }
+
+    const { page = 1, limit = 10, search } = query;
+
+    const whereClause = search
+      ? {
+          OR: [
+            {
+              email: {
+                contains: search,
+                mode: Prisma.QueryMode.insensitive
+              }
+            },
+            {
+              profile: {
+                firstName: {
+                  contains: search,
+                  mode: Prisma.QueryMode.insensitive
+                }
+              }
+            },
+            {
+              profile: {
+                lastName: {
+                  contains: search,
+                  mode: Prisma.QueryMode.insensitive
+                }
+              }
+            }
+          ]
+        }
+      : {};
+
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where: whereClause,
+        include: {
+          profile: true
+        },
+        skip: (page - 1) * limit,
+        take: limit
+      }),
+      this.prisma.user.count({
+        where: whereClause
+      })
+    ]);
+
+    const totalPage = Math.ceil(total / limit);
+    const hasNextPage = page < totalPage;
+
+    return {
+      users,
+      meta: {
+        totalData: total,
+        currentPage: page,
+        hasNextPage,
+        totalPage
+      }
+    };
+  }
 
   static async create(body: CreateUser, hasPermission?: HasPermission) {
     if (!hasPermission?.(CREATE_USER)) {
