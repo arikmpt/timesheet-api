@@ -15,7 +15,7 @@ interface SendInvitationProps {
 }
 
 interface SendResetPasswordProps {
-  invitationLink: string;
+  resetLink: string;
   email: string;
 }
 
@@ -38,7 +38,7 @@ abstract class EmailService {
   }
 
   static async sendResetPasswordEmail(data: SendResetPasswordProps) {
-    const html = renderToStaticMarkup(<ResetPassword invitationLink={data.invitationLink} />);
+    const html = renderToStaticMarkup(<ResetPassword invitationLink={data.resetLink} />);
     return await sendEmail({
       to: data.email,
       subject: 'Reset Password',

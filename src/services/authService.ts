@@ -1,8 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 import config from '@/config';
 import { Nullable } from '@/types';
+
+import { generateRandomPassword } from './commonService';
+import EmailService from './emailService';
 
 interface GetProfileRequest {
   id: number;
@@ -148,9 +152,9 @@ abstract class AuthService {
   }
 
   static async resetPassword(email: string) {
-    const defaultPassword = process.env.DEFAULT_PASSWORD;
+    const password = generateRandomPassword(8);
 
-    if (!defaultPassword) {
+    if (!password) {
       throw new Error('No Default Password');
     }
 
@@ -160,20 +164,30 @@ abstract class AuthService {
       }
     });
 
-    const cryptedPassword = await bcrypt.hash(defaultPassword, config.saltRound);
+    const cryptedPassword = await bcrypt.hash(password, config.saltRound);
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiredAt = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
 
     const update = await this.prisma.user.update({
       where: {
         id: user.id
       },
       data: {
-        password: cryptedPassword
+        password: cryptedPassword,
+        resetToken: token,
+        resetExpiredAt: expiredAt
       }
     });
 
     if (!update) {
       throw new Error(`Failed to process your request`);
     }
+
+    await EmailService.sendResetPasswordEmail({
+      email: update.email,
+      resetLink: `${config.resetPasswordUrl}?token=${token}`
+    });
 
     return {
       message: 'Successfully to reset your password'
