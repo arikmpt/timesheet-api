@@ -2,6 +2,7 @@ import Elysia from 'elysia';
 
 import {
   requestChangePassword,
+  requestChangePasswordAfterReset,
   requestLogin,
   requestProfile,
   requestResetPassword,
@@ -75,6 +76,14 @@ const authController = new Elysia()
   .post('/check-invite-token', async ({ body }) => await AuthService.checkInvitationToken(body.token), {
     body: requestToken,
     response: responseToken
+  })
+  .post('/check-reset-token', async ({ body }) => await AuthService.checkResetToken(body.token), {
+    body: requestToken,
+    response: responseToken
+  })
+  .post('/change-password-token', async ({ body }) => await AuthService.changePasswordAfterReset(body), {
+    body: requestChangePasswordAfterReset,
+    response: responseChangePassword
   });
 
 export default authController;
