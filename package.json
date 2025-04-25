@@ -4,7 +4,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",
-    "pretty": "prettier --write \"**/*.{ts,js}\"",
+    "pretty": "prettier --write \"**/*.{ts,js,tsx}\"",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "prepare": "husky install",
@@ -54,8 +54,8 @@
   },
   "lint-staged": {
     "*.{js,ts}": [
-      "prettier --write",
-      "eslint --fix"
+      "prettier --write \"**/*.{ts,js,tsx}\"",
+      "eslint src --fix"
     ]
   }
 }

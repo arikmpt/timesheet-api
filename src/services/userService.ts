@@ -1,14 +1,14 @@
-import { generateRandomPassword, sendEmail } from "./commonService"
-import InviteUser from '@/emails/InviteUser'
-import * as React from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
-import crypto from 'crypto';
-import { HasPermission } from "@/types";
-import { AuthorizationError } from "@/exceptions/AuthorizationError";
-import { CREATE_USER, FIND_USER } from "@/constant";
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
-import config from "@/config";
-import { PrismaClient } from "@prisma/client";
+import crypto from 'crypto';
+
+import config from '@/config';
+import { CREATE_USER, FIND_USER } from '@/constant';
+import { AuthorizationError } from '@/exceptions/AuthorizationError';
+import { HasPermission } from '@/types';
+
+import { generateRandomPassword } from './commonService';
+import EmailService from './emailService';
 
 interface CreateUser {
   email: string;
@@ -30,7 +30,7 @@ abstract class UserService {
         id: body.roleId
       }
     });
-  
+
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
     const password = generateRandomPassword(8);
@@ -62,34 +62,27 @@ abstract class UserService {
         }
       });
 
-      return user
+      return user;
     });
 
-    if(!result) {
+    if (!result) {
       throw new Error('Failed to process your request');
     }
 
-    const html = renderToStaticMarkup(
-      <InviteUser 
-        invitationLink={`${config.appUrl}users/accept-invitation?token=${token}`} 
-        firstName={result.profile?.firstName ?? ''} 
-        lastName={result.profile?.lastName ?? ''} 
-        password={password}
-      />
-    );
-
-    await sendEmail({ 
-      to: result.email, 
-      subject: 'Accept Invitation', 
-      html, 
-    })
+    await EmailService.sendInvitationEmail({
+      firstName: result.profile?.firstName ?? '',
+      lastName: result.profile?.lastName ?? '',
+      password: password,
+      email: result.email,
+      invitationLink: `${config.invitationUrl}?token=${token}`
+    });
 
     return {
       user: {
         ...result,
         profile: result.profile
       }
-    }
+    };
   }
 
   static async resendActivationLink(id: number, hasPermission?: HasPermission) {
@@ -100,10 +93,10 @@ abstract class UserService {
     const find = await this.prisma.user.findFirstOrThrow({
       where: {
         id
-      },
+      }
     });
 
-    if(find.isActive) {
+    if (find.isActive) {
       throw new Error(`This user already active, you can't resend the activation link`);
     }
 
@@ -124,26 +117,19 @@ abstract class UserService {
       include: {
         profile: true
       }
-    })
+    });
 
-    const html = renderToStaticMarkup(
-      <InviteUser 
-        invitationLink={`${config.appUrl}users/accept-invitation?token=${token}`} 
-        firstName={user.profile?.firstName ?? ''} 
-        lastName={user.profile?.lastName ?? ''} 
-        password={password}
-      />
-    );
-
-    await sendEmail({ 
-      to: user.email, 
-      subject: 'Accept Invitation', 
-      html, 
-    })
+    await EmailService.sendInvitationEmail({
+      firstName: user.profile?.firstName ?? '',
+      lastName: user.profile?.lastName ?? '',
+      password: password,
+      email: user.email,
+      invitationLink: `${config.invitationUrl}?token=${token}`
+    });
 
     return {
       message: 'Successfully resend the activation link'
-    }
+    };
   }
 
   static async find(id: number, hasPermission?: HasPermission) {
@@ -168,8 +154,8 @@ abstract class UserService {
         ...user,
         profile: user.profile
       }
-    }
+    };
   }
 }
 
-export default UserService
+export default UserService;

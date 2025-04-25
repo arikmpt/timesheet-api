@@ -28,7 +28,9 @@ export default function InviteUser({ invitationLink, firstName, lastName, passwo
             </Button>
           </Section>
           <Section className="text-center">
-            <Text className="text-base mb-4">Use this password to login: <span className="text-base font-medium">{password}</span></Text>
+            <Text className="text-base mb-4">
+              Use this password to login: <span className="text-base font-medium">{password}</span>
+            </Text>
           </Section>
         </Section>
       </Section>
@@ -40,5 +42,5 @@ InviteUser.PreviewProps = {
   firstName: 'John',
   lastName: 'Doe',
   invitationLink: 'https://www.lipsum.com/',
-  password: '123456'
+  password: ''
 };
