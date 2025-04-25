@@ -6,6 +6,7 @@ import { ValidationError } from 'elysia';
 import { AuthorizationError } from './exceptions/AuthorizationError';
 import authRoute from './routes/authRoute';
 import roleRoute from './routes/roleRoute';
+import userRoute from './routes/userRoute';
 
 const app = new Elysia()
   .use(
@@ -23,8 +24,7 @@ const app = new Elysia()
               bearerFormat: 'JWT'
             }
           }
-        },
-        security: [{ bearerAuth: [] }]
+        }
       }
     })
   )
@@ -99,6 +99,7 @@ const app = new Elysia()
   })
   .use(authRoute)
   .use(roleRoute)
+  .use(userRoute)
   .listen(3000);
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);

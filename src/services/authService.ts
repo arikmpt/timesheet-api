@@ -1,8 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 import config from '@/config';
 import { Nullable } from '@/types';
+
+import { generateRandomPassword } from './commonService';
+import EmailService from './emailService';
 
 interface GetProfileRequest {
   id: number;
@@ -20,6 +24,12 @@ interface GetChangePasswordRequest {
   oldPassword: string;
   newPassword: string;
   confirmPassword: string;
+}
+
+interface GetChangePasswordAfterResetRequest {
+  newPassword: string;
+  confirmPassword: string;
+  token: string;
 }
 abstract class AuthService {
   private static prisma = new PrismaClient();
@@ -148,9 +158,9 @@ abstract class AuthService {
   }
 
   static async resetPassword(email: string) {
-    const defaultPassword = process.env.DEFAULT_PASSWORD;
+    const password = generateRandomPassword(8);
 
-    if (!defaultPassword) {
+    if (!password) {
       throw new Error('No Default Password');
     }
 
@@ -160,14 +170,19 @@ abstract class AuthService {
       }
     });
 
-    const cryptedPassword = await bcrypt.hash(defaultPassword, config.saltRound);
+    const cryptedPassword = await bcrypt.hash(password, config.saltRound);
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiredAt = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
 
     const update = await this.prisma.user.update({
       where: {
         id: user.id
       },
       data: {
-        password: cryptedPassword
+        password: cryptedPassword,
+        resetToken: token,
+        resetExpiredAt: expiredAt
       }
     });
 
@@ -175,9 +190,106 @@ abstract class AuthService {
       throw new Error(`Failed to process your request`);
     }
 
+    await EmailService.sendResetPasswordEmail({
+      email: update.email,
+      resetLink: `${config.resetPasswordUrl}?token=${token}`
+    });
+
     return {
       message: 'Successfully to reset your password'
     };
+  }
+
+  static async checkInvitationToken(token: string) {
+    const user = await this.prisma.user.findFirstOrThrow({
+      where: {
+        invitationToken: token
+      }
+    });
+
+    const dateNow = new Date();
+    const tokenDate = new Date(user.invitationExpiredAt ?? '');
+
+    if (dateNow < tokenDate) {
+      const update = await this.prisma.user.update({
+        where: {
+          id: user.id
+        },
+        data: {
+          isActive: true,
+          invitationExpiredAt: null,
+          invitationToken: null
+        }
+      });
+
+      if (!update) {
+        throw new Error('Failed to process your request');
+      }
+
+      return {
+        message: 'Successfully updated user status'
+      };
+    }
+
+    throw new Error('Token expired');
+  }
+
+  static async checkResetToken(token: string) {
+    const user = await this.prisma.user.findFirstOrThrow({
+      where: {
+        resetToken: token
+      }
+    });
+
+    const dateNow = new Date();
+    const tokenDate = new Date(user.resetExpiredAt ?? '');
+
+    if (dateNow < tokenDate) {
+      return {
+        message: 'Successfully get reset data'
+      };
+    }
+
+    throw new Error('Token expired');
+  }
+
+  static async changePasswordAfterReset(body: GetChangePasswordAfterResetRequest) {
+    if (body.newPassword !== body.confirmPassword) {
+      throw new Error('New password and confirm password must be match');
+    }
+
+    const user = await this.prisma.user.findFirstOrThrow({
+      where: {
+        resetToken: body.token
+      }
+    });
+
+    const dateNow = new Date();
+    const tokenDate = new Date(user.resetExpiredAt ?? '');
+
+    if (dateNow < tokenDate) {
+      const cryptedPassword = await bcrypt.hash(body.confirmPassword, config.saltRound);
+      const update = await this.prisma.user.update({
+        where: {
+          id: user.id
+        },
+        data: {
+          resetExpiredAt: null,
+          resetToken: null,
+          password: cryptedPassword
+        }
+      });
+
+      if (!update) {
+        throw new Error('Failed to process your request');
+      }
+
+      return {
+        message: 'Successfully change your password'
+      };
+    }
+
+    throw new Error('Token expired');
   }
 }
 

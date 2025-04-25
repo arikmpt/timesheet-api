@@ -2,13 +2,16 @@ import Elysia from 'elysia';
 
 import {
   requestChangePassword,
+  requestChangePasswordAfterReset,
   requestLogin,
   requestProfile,
   requestResetPassword,
+  requestToken,
   responseChangePassword,
   responseLogin,
   responseProfile,
-  responseResetPassword
+  responseResetPassword,
+  responseToken
 } from '@/models/auth';
 import authorizationPlugin from '@/plugins/authorization';
 import jwtPlugin from '@/plugins/jwt';
@@ -36,11 +39,17 @@ const authController = new Elysia()
     }
   )
   .get('/profile', ({ authorizationContext }) => AuthService.profile(authorizationContext?.id), {
-    response: responseProfile
+    response: responseProfile,
+    detail: {
+      security: [{ bearerAuth: [] }]
+    }
   })
   .put('/profile', async ({ body }) => await AuthService.updateProfile(body), {
     body: requestProfile,
-    response: responseProfile
+    response: responseProfile,
+    detail: {
+      security: [{ bearerAuth: [] }]
+    }
   })
   .put(
     '/change-password',
@@ -54,12 +63,27 @@ const authController = new Elysia()
     },
     {
       body: requestChangePassword,
-      response: responseChangePassword
+      response: responseChangePassword,
+      detail: {
+        security: [{ bearerAuth: [] }]
+      }
     }
   )
   .post('/reset-password', async ({ body }) => await AuthService.resetPassword(body.email), {
     body: requestResetPassword,
     response: responseResetPassword
+  })
+  .post('/check-invite-token', async ({ body }) => await AuthService.checkInvitationToken(body.token), {
+    body: requestToken,
+    response: responseToken
+  })
+  .post('/check-reset-token', async ({ body }) => await AuthService.checkResetToken(body.token), {
+    body: requestToken,
+    response: responseToken
+  })
+  .post('/change-password-token', async ({ body }) => await AuthService.changePasswordAfterReset(body), {
+    body: requestChangePasswordAfterReset,
+    response: responseChangePassword
   });
 
 export default authController;
