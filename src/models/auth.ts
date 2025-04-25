@@ -54,6 +54,14 @@ const requestResetPassword = t.Object({
 
 const responseResetPassword = responseChangePassword;
 
+const requestToken = t.Object({
+  token: t.String()
+});
+
+const responseToken = t.Object({
+  message: t.String()
+});
+
 export {
   requestLogin,
   responseLogin,
@@ -62,5 +70,7 @@ export {
   requestChangePassword,
   responseChangePassword,
   requestResetPassword,
-  responseResetPassword
+  responseResetPassword,
+  requestToken,
+  responseToken
 };

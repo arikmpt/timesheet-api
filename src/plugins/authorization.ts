@@ -10,7 +10,8 @@ const authorizationPlugin = new Elysia({ name: 'authorizationContext' })
     if (
       request.url.includes('/swagger') ||
       request.url.includes('/auth/login') ||
-      request.url.includes('/auth/reset-password')
+      request.url.includes('/auth/reset-password') ||
+      request.url.includes('/auth/check-invite-token')
     ) {
       return;
     }

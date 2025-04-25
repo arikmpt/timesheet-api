@@ -193,6 +193,39 @@ abstract class AuthService {
       message: 'Successfully to reset your password'
     };
   }
+
+  static async checkInvitationToken(token: string) {
+    const user = await this.prisma.user.findFirstOrThrow({
+      where: {
+        invitationToken: token
+      }
+    });
+
+    const dateNow = new Date();
+    const tokenDate = new Date(user.invitationExpiredAt ?? '');
+
+    if (dateNow < tokenDate) {
+      const update = await this.prisma.user.update({
+        where: {
+          id: user.id
+        },
+        data: {
+          invitationExpiredAt: null,
+          invitationToken: null
+        }
+      });
+
+      if (!update) {
+        throw new Error('Failed to process your request');
+      }
+
+      return {
+        message: 'Successfully updated user status'
+      };
+    }
+
+    throw new Error('Token expired');
+  }
 }
 
 export default AuthService;

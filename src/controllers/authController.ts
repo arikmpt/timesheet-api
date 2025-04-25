@@ -5,10 +5,12 @@ import {
   requestLogin,
   requestProfile,
   requestResetPassword,
+  requestToken,
   responseChangePassword,
   responseLogin,
   responseProfile,
-  responseResetPassword
+  responseResetPassword,
+  responseToken
 } from '@/models/auth';
 import authorizationPlugin from '@/plugins/authorization';
 import jwtPlugin from '@/plugins/jwt';
@@ -69,6 +71,10 @@ const authController = new Elysia()
   .post('/reset-password', async ({ body }) => await AuthService.resetPassword(body.email), {
     body: requestResetPassword,
     response: responseResetPassword
+  })
+  .post('/check-invite-token', async ({ body }) => await AuthService.checkInvitationToken(body.token), {
+    body: requestToken,
+    response: responseToken
   });
 
 export default authController;
