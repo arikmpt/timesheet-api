@@ -13,7 +13,8 @@ const authorizationPlugin = new Elysia({ name: 'authorizationContext' })
       request.url.includes('/auth/reset-password') ||
       request.url.includes('/auth/check-invite-token') ||
       request.url.includes('/auth/check-reset-token') ||
-      request.url.includes('/auth/change-password-token')
+      request.url.includes('/auth/change-password-token') ||
+      request.url.includes('/ref/countries')
     ) {
       return;
     }
