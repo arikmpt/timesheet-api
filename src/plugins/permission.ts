@@ -13,7 +13,8 @@ const permissionPlugin = new Elysia({ name: 'permissionContext' })
     if (
       request.url.includes('/swagger') ||
       request.url.includes('/auth/login') ||
-      request.url.includes('/auth/reset-password')
+      request.url.includes('/auth/login') ||
+      request.url.includes('/ref/countries')
     ) {
       return;
     }
