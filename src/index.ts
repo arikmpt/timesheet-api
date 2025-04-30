@@ -1,3 +1,4 @@
+import { cors } from '@elysiajs/cors';
 import { swagger } from '@elysiajs/swagger';
 import { Prisma } from '@prisma/client';
 import { Elysia } from 'elysia';
@@ -9,6 +10,7 @@ import roleRoute from './routes/roleRoute';
 import userRoute from './routes/userRoute';
 
 const app = new Elysia()
+  .use(cors())
   .use(
     swagger({
       documentation: {
@@ -34,15 +36,27 @@ const app = new Elysia()
 
       if (error.code === 'P2002') {
         set.status = 409;
-        return { error: `Duplicate field: ` };
+        return {
+          error: {
+            message: `Duplicate field: `
+          }
+        };
       }
 
       if (error.code === 'P2025') {
         set.status = 404;
-        return { error: 'Record not found' };
+        return {
+          error: {
+            message: 'Record not found'
+          }
+        };
       }
 
-      return { error: `Prisma error: ${error.message}` };
+      return {
+        error: {
+          message: `Prisma error: ${error.message}`
+        }
+      };
     }
 
     if (error instanceof Prisma.PrismaClientValidationError) {
@@ -53,7 +67,9 @@ const app = new Elysia()
     if (error instanceof AuthorizationError) {
       set.status = 403;
       return {
-        error: error.message
+        error: {
+          message: error.message
+        }
       };
     }
 
@@ -90,7 +106,9 @@ const app = new Elysia()
     if (error instanceof Error) {
       set.status = 500;
       return {
-        error: error.message
+        error: {
+          message: error.message
+        }
       };
     }
     return {
